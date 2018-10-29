@@ -1,0 +1,12 @@
+AllCops:
+  Exclude:
+    - 'spec/**/*.rb'
+
+Metrics/LineLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 15
+
+Metrics/AbcSize:
+  Max: 22

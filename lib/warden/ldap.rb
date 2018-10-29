@@ -1,16 +1,19 @@
-require "warden/ldap/version"
-require "warden/ldap/logger"
-require "warden/ldap/configuration"
-require "warden/ldap/connection"
-require "warden/ldap/strategy"
-require "warden/ldap/fake_strategy"
+# frozen_string_literal: true
+
+require 'warden/ldap/version'
+require 'warden/ldap/logger'
+require 'warden/ldap/configuration'
+require 'warden/ldap/connection'
+require 'warden/ldap/strategy'
+require 'warden/ldap/fake_strategy'
 
 module Warden
+  # Warden LDAP strategy
   module Ldap
     class << self
       extend Forwardable
       Configuration.defined_settings.each do |setting|
-        def_delegators :configuration, setting, "#{setting.to_s}="
+        def_delegators :configuration, setting, "#{setting}="
       end
 
       def configure
@@ -23,13 +26,14 @@ module Warden
       end
 
       def register
-        strategy = configuration.test_env? ?
-          Warden::Ldap::FakeStrategy :
-          Warden::Ldap::Strategy
+        strategy = if configuration.test_env?
+                     Warden::Ldap::FakeStrategy
+                   else
+                     Warden::Ldap::Strategy
+                   end
 
         Warden::Strategies.add(:ldap, strategy)
       end
     end
   end
 end
-
