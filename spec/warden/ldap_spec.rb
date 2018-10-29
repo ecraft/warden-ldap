@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe Warden::Ldap do
+RSpec.describe Warden::Ldap do
   before :each do
     described_class.configure do |c|
       c.config_file = File.join(File.dirname(__FILE__), '../fixtures/warden_ldap.yml')

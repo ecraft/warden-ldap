@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe Warden::Ldap::Connection do
+RSpec.describe Warden::Ldap::Connection do
   before(:each) do
     allow_any_instance_of(described_class).to receive(:config)
       .and_return('host' => '_ldap._tcp.example.com')
