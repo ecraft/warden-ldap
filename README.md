@@ -78,8 +78,6 @@ authorizations: &AUTHORIZATIONS
   attributes: [uid, cn, mail, samAccountName]
   base: ou=users,ou=accounts,dc=ds,dc=renewfund,dc=com
   generic_credentials: [bindaccount, ahead-example-seems-label]
-#  ssl: start_tls
-  # <<: *AUTHORIZATIONS
 
 test: 
   <<: *AUTHORIZATIONS
