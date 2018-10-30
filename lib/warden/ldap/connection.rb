@@ -107,7 +107,7 @@ module Warden
       # Sets @host_addresses to an array of IP addresses
       def set_host_addresses
         @host_addresses = Resolv::DNS.open do |dns|
-          dns.getresources(config['host'], Resolv::DNS::Resource::IN::SRV)
+          dns.getresources(config.fetch('host') { raise KeyError, 'Required configuration key "host" not found.' }, Resolv::DNS::Resource::IN::SRV)
              .map(&:target)
              .map(&:to_s)
         end
@@ -139,12 +139,15 @@ module Warden
                     scope: Net::LDAP::SearchScope_BaseObject).try(:first)
       end
 
+      # Returns the configuration for configured environment.
+      #
+      # @return [Hash] the section of the YAML config for the current env
       def config
-        if File.exist?(Warden::Ldap.config_file.to_s)
-          @config = YAML.load_file(Warden::Ldap.config_file.to_s)[Warden::Ldap.env]
-        else
-          {}
-        end
+        file = Pathname(Warden::Ldap.config_file)
+        return {} unless file.exist?
+
+        text = ERB.new(file.read).result
+        @config = YAML.load(text)[Warden::Ldap.env]
       end
 
       def dn

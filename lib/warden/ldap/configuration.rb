@@ -11,8 +11,8 @@ module Warden
     #   Warden::Ldap.configure do |c|
     #     c.config_file = 'path/to/warden_config.yml'
     #     # ...
-    #     c.env 'test'
-    #     c.logger Logger.new(STDOUT)
+    #     c.env = 'test'
+    #     c.logger = Logger.new(STDOUT)
     #   end
     class Configuration
       Missing = Class.new(StandardError)
