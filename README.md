@@ -36,6 +36,64 @@ end
 
 3. Add the `ldap_config.yml` to configure connection to ldap server. See `spec/fixtures/ldap_config_sample.yml`.
 
+## Configuration
+
+Configuration is done in YAML.
+
+The content is preprocessed using ERB before being parsed as YAML.
+
+```yml
+
+## Authorizations
+#
+# Uncomment out the merging for each environment that you'd like to include.
+# You can also just copy and paste the tree (do not include the
+# "authorizations") to each environment if you need something different per
+# environment.
+
+authorizations: &AUTHORIZATIONS
+  group_base: ou=groups,dc=test,dc=com
+
+  ## Requires config.ldap_check_group_membership in devise.rb be true
+  #
+  # Can have multiple values, must match all to be authorized
+  required_groups:
+    # If only a group name is given, membership will be checked against
+    # "uniqueMember"
+    - cn=admins,ou=groups,dc=test,dc=com
+    - cn=users,ou=groups,dc=test,dc=com
+    # If an array is given, the first element will be the attribute to check
+    # against, the second the group name
+    - ["moreMembers", "cn=users,ou=groups,dc=test,dc=com"]
+
+  ## Requires config.ldap_check_attributes in devise.rb to be true
+  #
+  # Can have multiple attributes and values, must match all to be authorized
+  require_attribute:
+    objectClass: inetOrgPerson
+    authorizationRole: postsAdmin
+
+  host: your.ldap.example.com
+  port: 389
+  attributes: [uid, cn, mail, samAccountName]
+  base: ou=users,ou=accounts,dc=ds,dc=renewfund,dc=com
+  generic_credentials: [bindaccount, ahead-example-seems-label]
+#  ssl: start_tls
+  # <<: *AUTHORIZATIONS
+
+test: 
+  <<: *AUTHORIZATIONS
+  host: your.ldap.example.com
+  port: <%= ENV['MY_SPECIAL_TEST_URI_PORT'] %>
+development: 
+  <<: *AUTHORIZATIONS
+  host: your.ldap.example.com
+production: 
+  <<: *AUTHORIZATIONS
+  host: your.ldap.example.com
+
+```
+
 ## Testing
 
 Enable mocked authentication using the optional configuration `test_environments`.
