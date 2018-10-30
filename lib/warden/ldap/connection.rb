@@ -147,7 +147,7 @@ module Warden
         return {} unless file.exist?
 
         text = ERB.new(file.read).result
-        @config = YAML.load(text)[Warden::Ldap.env]
+        @config = YAML.safe_load(text, [], [], true)[Warden::Ldap.env]
       end
 
       def dn
