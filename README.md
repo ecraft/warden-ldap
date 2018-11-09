@@ -21,7 +21,7 @@ And then execute:
 ## Usage
 
 1. Install gem per instructions above
-2. Initialize the `Warden::Ldap` adapter:
+2. Initialize the `Warden::Ldap` adapter - this also registers the `:ldap` Warden Strategy
 
 ```ruby
 Warden::Ldap.configure do |c|
@@ -30,7 +30,7 @@ Warden::Ldap.configure do |c|
 end
 ```
 
-3. Add the `ldap_config.yml` to configure connection to ldap server. See `spec/fixtures/ldap_config_sample.yml`.
+3. Add the `ldap_config.yml` to configure a connection to LDAP server. See `spec/fixtures/ldap_config_sample.yml`.
 
 ## Configuration
 
