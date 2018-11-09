@@ -44,7 +44,7 @@ RSpec.describe Warden::Ldap do
     allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('samAccountName').and_return('bobby')
     allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('cn').and_return('Samuel')
     allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('mail').and_return('Samuel@swiftpenguin.com')
-    result = setup_rack(app).call(env)
+    _result = setup_rack(app).call(env)
     expect(env['warden'].user.username).to eq 'bobby'
     expect(env['warden'].user.name).to eq 'Samuel'
   end
