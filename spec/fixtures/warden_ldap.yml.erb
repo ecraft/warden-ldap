@@ -1,11 +1,10 @@
 ## ERB processing example
 authorizations: &AUTHORIZATIONS
-  group_base: ou=groups,dc=test,dc=com
   host: your.ldap.host.com
   port: <%= ENV['WARDEN_LDAP_PORT'] %>
   attributes: [uid, cn, mail, samAccountName]
   base: ou=users,ou=accounts,dc=ds,dc=renewfund,dc=com
-  generic_credentials: [bindaccount, ahead-example-seems-label]
+  generic_credentials: [admin, sekret]
 
 test:
   <<: *AUTHORIZATIONS
