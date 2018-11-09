@@ -28,4 +28,5 @@ RSpec.configure do |config|
   config.order = 'random'
 
   config.disable_monkey_patching!
+  config.example_status_persistence_file_path = 'spec/examples.txt'
 end

@@ -77,11 +77,13 @@ authorizations: &AUTHORIZATIONS
 
 test: 
   <<: *AUTHORIZATIONS
-  host: your.ldap.example.com
+  host: localhost
   port: <%= ENV['MY_SPECIAL_TEST_URI_PORT'] %>
+  skip_srv_record_resolution: true
 development: 
   <<: *AUTHORIZATIONS
-  host: your.ldap.example.com
+  host: localhost
+  skip_srv_record_resolution: true
 production: 
   <<: *AUTHORIZATIONS
   host: your.ldap.example.com

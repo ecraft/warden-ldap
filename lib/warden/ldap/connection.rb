@@ -5,7 +5,7 @@ require 'resolv'
 module Warden
   module Ldap
     # LDAP connection
-    class Connection
+    class Connection # rubocop:disable Metrics/ClassLength
       attr_reader :ldap, :login, :host_addresses
 
       def logger
@@ -106,11 +106,16 @@ module Warden
 
       # Sets @host_addresses to an array of IP addresses
       def set_host_addresses
-        @host_addresses = Resolv::DNS.open do |dns|
-          dns.getresources(config.fetch('host') { raise KeyError, 'Required configuration key "host" not found.' }, Resolv::DNS::Resource::IN::SRV)
-             .map(&:target)
-             .map(&:to_s)
-        end
+        @host_addresses =
+          if config['skip_srv_record_resolution']
+            [config.fetch('host') { raise KeyError, 'Required configuration key "host" not found.' }]
+          else
+            Resolv::DNS.open do |dns|
+              dns.getresources(config.fetch('host') { raise KeyError, 'Required configuration key "host" not found.' }, Resolv::DNS::Resource::IN::SRV)
+                 .map(&:target)
+                 .map(&:to_s)
+            end
+          end
       end
 
       def ldap_host

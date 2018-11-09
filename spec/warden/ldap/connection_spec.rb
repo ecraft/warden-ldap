@@ -11,12 +11,26 @@ RSpec.describe Warden::Ldap::Connection do
       let(:resource_one) {double(target: 'foo')}
       let(:resource_two) {double(target: 'bar')}
 
-      it 'sets up host_addresses' do
-        allow_any_instance_of(Resolv::DNS).to receive(:getresources)
-                                                  .with('_ldap._tcp.example.com', Resolv::DNS::Resource::IN::SRV)
-                                                  .and_return([resource_one, resource_two])
-        subject = described_class.new
-        expect(subject.host_addresses).to match_array %w[foo bar]
+      context 'when configured to resolve SRV records' do
+        it 'sets up host_addresses from SRV records' do
+          expect_any_instance_of(Resolv::DNS).to receive(:getresources)
+                                                    .with('_ldap._tcp.example.com', Resolv::DNS::Resource::IN::SRV)
+                                                    .and_return([resource_one, resource_two])
+          subject = described_class.new
+          expect(subject.host_addresses).to match_array %w[foo bar]
+        end
+      end
+
+      context 'when configured not to resolve SRV records' do
+        it 'sets up host_addresses with configured host as the single element' do
+          allow_any_instance_of(described_class).to receive(:config)
+                                                        .and_return('host' => 'my_fixed_ldap.example.com',
+                                                                    'skip_srv_record_resolution' => true)
+          expect_any_instance_of(Resolv::DNS).not_to receive(:getresources)
+
+          subject = described_class.new
+          expect(subject.host_addresses).to match_array %w[my_fixed_ldap.example.com]
+        end
       end
     end
 
