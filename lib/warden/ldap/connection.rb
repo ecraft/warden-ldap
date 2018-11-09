@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
-require 'yaml'
 require 'resolv'
+require 'uri'
+require 'yaml'
+
+require 'warden/ldap/host'
+
 module Warden
   module Ldap
     # LDAP connection
     class Connection
-      attr_reader :ldap, :login, :host_addresses
+      attr_reader :ldap, :config, :hosts
 
       def logger
         Warden::Ldap.logger
@@ -15,24 +19,29 @@ module Warden
       # Uses the warden_ldap.yml file to initialize the net-ldap connection.
       #
       # @param options [Hash]
+      # @option options [String] :url url for ldap server
       # @option options [String] :username username to use for logging in
       # @option options [String] :password password to use for logging in
       # @option options [String] :encryption 'ssl' to use secure server
-      def initialize(options = {})
-        @login = options.delete(:username)
+      def initialize(config, options = {})
+        @config = config.config
+
+        @url = URI(@config.fetch('url'))
+
+        @hosts = Warden::Ldap::Host.list_from_url(@url)
+
+        @username = options.delete(:username)
         @password = options.delete(:password)
 
-        options[:encryption] = config['ssl'].to_sym if config['ssl']
-
-        set_host_addresses
+        options[:encryption] = @config['ssl'].to_sym if @config['ssl']
 
         @ldap = Net::LDAP.new(options)
-        @ldap.host = host_addresses.first
-        @ldap.port = config['port']
-        @ldap.base = config['base']
+        @ldap.host = @hosts.first.hostname
+        @ldap.port = @hosts.first.port
+        @ldap.base = @url.dn
 
-        @generic_credentials = config['generic_credentials']
-        @attribute = [config['attributes']].flatten
+        @generic_credentials = @config['generic_credentials']
+        @attribute = [@config['attributes']].flatten
       end
 
       # Searches LDAP directory for the parameters value passed in, e.g., 'cn'.
@@ -64,23 +73,10 @@ module Warden
       # @return [Boolean, nil] true if authentication was successful,
       #   false otherwise, or nil if password was not provided
       def authenticate!
-        result = nil
-        count = 0
-        length = host_addresses.length
+        return unless @password
 
-        while count < length * 2
-          begin
-            logger.info("Attempting LDAP connect with host #{@ldap.host}.")
-            Timeout.timeout(config.fetch('timeout', 5).to_i) { result = connect! }
-            break
-          rescue Errno::ETIMEDOUT, Timeout::Error
-            logger.error("Requested host timed out: #{@ldap.host}; trying again with new host.")
-            count += 1
-            @ldap.host = host_addresses[count % length]
-          end
-        end
-
-        result
+        @ldap.auth(dn, @password)
+        @ldap.bind
       end
 
       # @return [Boolean] true if user is authenticated
@@ -97,22 +93,6 @@ module Warden
 
       private
 
-      def connect!
-        return unless @password
-
-        @ldap.auth(dn, @password)
-        @ldap.bind
-      end
-
-      # Sets @host_addresses to an array of IP addresses
-      def set_host_addresses
-        @host_addresses = Resolv::DNS.open do |dns|
-          dns.getresources(config.fetch('host') { raise KeyError, 'Required configuration key "host" not found.' }, Resolv::DNS::Resource::IN::SRV)
-             .map(&:target)
-             .map(&:to_s)
-        end
-      end
-
       def ldap_host
         @ldap.host
       end
@@ -121,7 +101,7 @@ module Warden
       #
       # @return [Object] the LDAP entry found; nil if not found
       def search_for_login
-        logger.info("LDAP search for login: #{@attribute}=#{@login}")
+        logger.info("LDAP search for login: #{@attribute}=#{@username}")
         ldap_entry = nil
         @ldap.auth(*@generic_credentials)
         @ldap.search(filter: ldap_username_filter) { |entry| ldap_entry = entry }
@@ -129,7 +109,7 @@ module Warden
       end
 
       def ldap_username_filter
-        filters = @attribute.map { |att| Net::LDAP::Filter.eq(att, @login) }
+        filters = @attribute.map { |att| Net::LDAP::Filter.eq(att, @username) }
         filters.inject { |a, b| Net::LDAP::Filter.intersect(a, b) }
       end
 
@@ -139,19 +119,8 @@ module Warden
                     scope: Net::LDAP::SearchScope_BaseObject).try(:first)
       end
 
-      # Returns the configuration for configured environment.
-      #
-      # @return [Hash] the section of the YAML config for the current env
-      def config
-        file = Pathname(Warden::Ldap.config_file)
-        return {} unless file.exist?
-
-        text = ERB.new(file.read).result
-        @config = YAML.safe_load(text, [], [], true)[Warden::Ldap.env]
-      end
-
       def dn
-        logger.info("LDAP dn lookup: #{@attribute}=#{@login}")
+        logger.info("LDAP dn lookup: #{@attribute}=#{@username}")
 
         ldap_entry = search_for_login
         return unless ldap_entry

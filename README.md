@@ -45,23 +45,17 @@ The content is preprocessed using ERB before being parsed as YAML.
 # This is a YAML alias, referred to in the environments below
 
 authorizations: &AUTHORIZATIONS
-  host: your.ldap.example.com
-  port: 389
-  attributes: [uid, cn, mail, samAccountName]
-  base: ou=users,ou=accounts,dc=ds,dc=renewfund,dc=com
-  generic_credentials: [admin, sekret]
+  url: ldap://your.ldap.example.com/dc=ds,dc=renewfund,dc=com
+  username: <%= ENV['LDAP_USERNAME'] %>
+  password: <%= ENV['LDAP_PASSWORD'] %>
 
 test: 
   <<: *AUTHORIZATIONS
-  host: your.ldap.example.com
-  port: <%= ENV['MY_SPECIAL_TEST_URI_PORT'] %>
+  url: ldap://localhost:1389/dc=example,dc=org
 development: 
   <<: *AUTHORIZATIONS
-  host: your.ldap.example.com
 production: 
   <<: *AUTHORIZATIONS
-  host: your.ldap.example.com
-
 ```
 
 ## Testing

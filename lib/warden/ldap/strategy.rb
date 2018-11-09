@@ -21,7 +21,7 @@ module Warden
       #                           with username, and name derived from the 'cn'
       #                           key in the LDAP directory, or nil on failure
       def authenticate!
-        connection = Warden::Ldap::Connection.new(credentials_hash)
+        connection = Warden::Ldap::Connection.new(Warden::Ldap.configuration, credentials_hash)
         response = connection.authenticate!
 
         if response

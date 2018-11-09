@@ -17,7 +17,12 @@ module Warden
       end
 
       def configure
-        yield configuration if block_given?
+        cfg = configuration
+
+        yield cfg if block_given?
+
+        cfg.finalize!
+
         Warden::Ldap.register
       end
 

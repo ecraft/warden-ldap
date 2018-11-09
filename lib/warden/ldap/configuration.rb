@@ -28,10 +28,11 @@ module Warden
         end
       end
 
-      # Path to the YAML config file which is required for connecting to the
-      # LDAP server.
-      # REQUIRED
+      # Path to the YAML config file for how to connect to the LDAP server.
       define_setting :config_file
+
+      # Configuration hash for how to connect to the LDAP server.
+      define_setting :config
 
       # Application environment. Determines which
       # environment to use from the YAML config_file.
@@ -50,6 +51,8 @@ module Warden
       def initialize
         @logger ||= Warden::Ldap::Logger
         @test_environments = nil
+
+        yield self if block_given?
       end
 
       # @return [Object] the current environment set by the app
@@ -67,6 +70,22 @@ module Warden
       #                   in test_environments
       def test_env?
         (@test_environments || []).include?(env)
+      end
+
+      # Finalize and validate configuration
+      def finalize!
+        raise Missing, 'Cannot have both a config and a configuration file' if @config && @config_file
+
+        if @config_file
+          raw = Pathname(@config_file).read
+          yml = ERB.new(raw).result
+
+          @config = YAML.safe_load(yml, [], [], true)[env]
+        end
+
+        self
+      rescue Errno::ENOENT
+        raise Missing, "Could not find configuration file #{@config_file.inspect}"
       end
     end
   end
