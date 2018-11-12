@@ -25,7 +25,7 @@ module Warden
       end
     end
 
-    # A pool of LDAP hosts 
+    # A pool of LDAP hosts
     class HostPool
       attr_reader :hosts
       attr_reader :base
