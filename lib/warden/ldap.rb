@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'warden/ldap/version'
-require 'warden/ldap/logger'
 require 'warden/ldap/configuration'
 require 'warden/ldap/connection'
 require 'warden/ldap/strategy'

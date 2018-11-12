@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'logger'
+
 module Warden
   module Ldap
     # Stores configuration information
@@ -49,7 +51,7 @@ module Warden
       define_setting :test_environments
 
       def initialize
-        @logger ||= Warden::Ldap::Logger
+        @logger ||= Logger.new($STDERR)
         @test_environments = nil
 
         yield self if block_given?
