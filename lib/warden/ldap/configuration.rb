@@ -51,7 +51,7 @@ module Warden
       define_setting :test_environments
 
       def initialize
-        @logger ||= Logger.new($STDERR)
+        @logger ||= Logger.new($stderr)
         @test_environments = nil
 
         yield self if block_given?
