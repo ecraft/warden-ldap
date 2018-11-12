@@ -12,12 +12,12 @@ RSpec.describe Warden::Ldap::Connection do
       describe '#initialize' do
         it 'sets up hosts for regular url' do
           subject = described_class.new(config)
-          expect(subject.hosts.map(&:hostname)).to match_array %w[ldap.example.com]
+          expect(subject.host_pool.hosts.map(&:hostname)).to match_array %w[ldap.example.com]
         end
 
         it 'sets up default port for regular url' do
           subject = described_class.new(config)
-          expect(subject.hosts.map(&:port)).to match_array [389]
+          expect(subject.host_pool.hosts.map(&:port)).to match_array [389]
         end
       end
 

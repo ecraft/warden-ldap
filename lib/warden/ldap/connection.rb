@@ -10,7 +10,7 @@ module Warden
   module Ldap
     # LDAP connection
     class Connection
-      attr_reader :ldap, :config, :hosts
+      attr_reader :ldap, :config, :host_pool
 
       def logger
         Warden::Ldap.logger
@@ -23,22 +23,19 @@ module Warden
       # @option options [String] :username username to use for logging in
       # @option options [String] :password password to use for logging in
       # @option options [String] :encryption 'ssl' to use secure server
-      def initialize(config, options = {})
+      def initialize(config, username: nil, password: nil, **options)
         @config = config.config
 
         @url = URI(@config.fetch('url'))
 
-        @hosts = Warden::Ldap::Host.list_from_url(@url)
-
-        @username = options.delete(:username)
-        @password = options.delete(:password)
+        @username = username
+        @password = password
 
         options[:encryption] = @config['ssl'].to_sym if @config['ssl']
 
-        @ldap = Net::LDAP.new(options)
-        @ldap.host = @hosts.first.hostname
-        @ldap.port = @hosts.first.port
-        @ldap.base = @url.dn
+        @host_pool = Warden::Ldap::HostPool.from_url(@url, options: options)
+
+        @ldap = @host_pool.connect
 
         @generic_credentials = @config['generic_credentials']
         @attribute = [@config['attributes']].flatten
