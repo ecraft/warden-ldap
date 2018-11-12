@@ -30,14 +30,16 @@ module Warden
       attr_reader :base
       attr_reader :options
 
-      def initialize(base:, options:)
+      def initialize(base:, options: {})
         @base = base
         @options = options
 
         @hosts = []
       end
 
-      def self.from_url(url, options:)
+      def self.from_url(url, options: {})
+        url = URI(url) if url.is_a? String
+
         new(base: url.dn, options: options).tap do |pool|
           pool.hosts << Host.new(pool: pool, hostname: url.host, port: url.port)
         end

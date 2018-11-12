@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
 require 'resolv'
-require 'uri'
 require 'yaml'
 
-require 'warden/ldap/host'
+require 'warden/ldap/host_pool'
 
 module Warden
   module Ldap
@@ -26,14 +25,12 @@ module Warden
       def initialize(config, username: nil, password: nil, **options)
         @config = config.config
 
-        @url = URI(@config.fetch('url'))
-
         @username = username
         @password = password
 
         options[:encryption] = @config['ssl'].to_sym if @config['ssl']
 
-        @host_pool = Warden::Ldap::HostPool.from_url(@url, options: options)
+        @host_pool = Warden::Ldap::HostPool.from_url(@config.fetch('url'), options: options)
 
         @ldap = @host_pool.connect
 
