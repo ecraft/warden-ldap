@@ -8,6 +8,12 @@ module Warden
   module Ldap
     # Warden Strategy for LDAP
     class Strategy < Warden::Strategies::Base
+      def initialize(*args)
+        super
+
+        @config = Warden::Ldap.configuration
+      end
+
       # @return [Boolean ] true if all credentials have been provided.
       def valid?
         credentials.all? { |c| c.to_s !~ /^\s*$/ }
@@ -17,15 +23,13 @@ module Warden
       # server specified in the YAML configuration file and with the current
       # credentials.
       #
-      # @return [OpenStruct, nil] user object constructed as an OpenStruct
-      #                           with username, and name derived from the 'cn'
-      #                           key in the LDAP directory, or nil on failure
+      # @return [Object, nil] user object
       def authenticate!
-        connection = Warden::Ldap::Connection.new(Warden::Ldap.configuration, credentials_hash)
-        response = connection.authenticate!
+        connection = Warden::Ldap::Connection.new(@config, credentials_hash)
+        user = connection.authenticate!
 
-        if response
-          success!(user_from_connection(connection))
+        if user
+          success!(user)
         else
           fail!('Could not log in')
         end
@@ -34,15 +38,6 @@ module Warden
       end
 
       private
-
-      def user_from_connection(connection)
-        username = connection.ldap_param_value('samAccountName')
-        name = connection.ldap_param_value('cn')
-        email = connection.ldap_param_value('mail')
-        OpenStruct.new(username: username,
-                       name: name,
-                       email: email)
-      end
 
       # extracts the username and password from the params (this is the
       # same params on the RackRequest object which is typically delivered
@@ -53,8 +48,8 @@ module Warden
 
       def credentials_hash
         username, password = credentials
-        { username: username,
-          password: password }
+
+        { username: username, password: password }
       end
     end
   end

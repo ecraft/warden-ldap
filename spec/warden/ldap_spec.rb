@@ -6,9 +6,9 @@ RSpec.describe Warden::Ldap do
       it 'returns Rails.env if defined' do
         Warden::Ldap.env = nil
 
-        rails = double(env: :rails_environemnt)
+        rails = double(env: :rails_environment)
         stub_const('Rails', rails)
-        expect(described_class.env).to eq(:rails_environemnt)
+        expect(described_class.env).to eq(:rails_environment)
       end
 
       it 'raises error if no environment defined' do
@@ -51,16 +51,16 @@ RSpec.describe Warden::Ldap do
       Warden::Ldap.env = 'test'
 
       described_class.configure do |c|
-        c.config_file = File.join(File.dirname(__FILE__), '../fixtures/warden_ldap.yml')
+        c.config_file = File.join(__dir__, '../fixtures/warden_ldap.yml')
       end
     end
 
     it 'returns 401 if not authenticated' do
       env = env_with_params('/', 'username' => 'test')
       app = lambda do |env|
-        env['warden'].authenticate(:ldap)
-        throw(:warden)
+        env['warden'].authenticate!(:ldap)
       end
+
       result = setup_rack(app).call(env)
       expect(result.first).to eq 401
       expect(result.last).to eq ['You Fail!']
@@ -69,13 +69,14 @@ RSpec.describe Warden::Ldap do
     it 'returns 200 if authenticates properly' do
       env = env_with_params('/', 'username' => 'bobby', 'password' => 'joel')
       app = lambda do |env|
-        env['warden'].authenticate(:ldap)
+        env['warden'].authenticate!(:ldap)
         success_app.call(env)
       end
+
       allow_any_instance_of(Warden::Ldap::Connection).to receive_messages(authenticate!: true)
-      allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('samAccountName').and_return('samuel')
-      allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('cn').and_return('Samuel')
-      allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('mail').and_return('Samuel@swiftpenguin.com')
+      allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('userId').and_return('samuel')
+      allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('emailAddress').and_return('samuel@example.com')
+
       result = setup_rack(app).call(env)
       expect(result.first).to eq 200
       expect(result.last).to eq ['You Rock!']
@@ -84,16 +85,14 @@ RSpec.describe Warden::Ldap do
     it 'returns authenticated user information' do
       env = env_with_params('/', 'username' => 'bobby', 'password' => 'joel')
       app = lambda do |env|
-        env['warden'].authenticate(:ldap)
+        env['warden'].authenticate!(:ldap)
         success_app.call(env)
       end
-      allow_any_instance_of(Warden::Ldap::Connection).to receive_messages(authenticate!: true)
-      allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('samAccountName').and_return('bobby')
-      allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('cn').and_return('Samuel')
-      allow_any_instance_of(Warden::Ldap::Connection).to receive(:ldap_param_value).with('mail').and_return('Samuel@swiftpenguin.com')
+
+      allow_any_instance_of(Warden::Ldap::Connection).to receive_messages(authenticate!: OpenStruct.new(username: 'bobby'))
+
       result = setup_rack(app).call(env)
       expect(env['warden'].user.username).to eq 'bobby'
-      expect(env['warden'].user.name).to eq 'Samuel'
     end
   end
 end

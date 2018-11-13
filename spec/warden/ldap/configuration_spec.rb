@@ -20,9 +20,9 @@ RSpec.describe Warden::Ldap::Configuration do
     config = Warden::Ldap::Configuration.new
     config.load_configuration_file(path, environment: 'test')
 
-    expect(config.attributes).to contain_exactly('uid', 'cn', 'mail', 'samAccountName')
+    expect(config.attributes).to eq(username: "userId", email: "emailAddress")
   end
-  
+
   it 'parses SSL settings' do
     path = File.expand_path('../../fixtures/warden_ldap.yml', __dir__)
     config = Warden::Ldap::Configuration.new

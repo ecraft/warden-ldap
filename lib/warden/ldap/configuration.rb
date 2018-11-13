@@ -41,6 +41,7 @@ module Warden
 
       define_setting(:url)
       define_setting(:attributes)
+      define_setting(:user_filter)
       define_setting(:username)
       define_setting(:password)
       define_setting(:ssl) { |ssl| ssl&.to_sym }

@@ -1,9 +1,12 @@
 authorizations: &AUTHORIZATIONS
   url: ldap://your.ldap.host.com/ou=users,ou=accounts,dc=ds,dc=renewfund,dc=com
-  attributes: [uid, cn, mail, samAccountName]
   username: admin
   password: sekret
   ssl: start_tls
+  attributes:
+    username: "userId"
+    email: "emailAddress"
+  user_filter: "(&(objectClass=user)(emailAddress=$username))"
 
 test: 
   <<: *AUTHORIZATIONS

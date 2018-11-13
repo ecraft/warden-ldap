@@ -10,11 +10,11 @@
 require 'simplecov'
 SimpleCov.start
 
-Dir[File.join(File.dirname(__FILE__), 'helpers', '**/*.rb')].each do |f|
+Dir[File.join(__dir__, 'helpers', '**/*.rb')].each do |f|
   require f
 end
 
-require File.join(File.dirname(__FILE__), '../lib/warden/ldap')
+require File.join(__dir__, '../lib/warden/ldap')
 
 RSpec.configure do |config|
   config.run_all_when_everything_filtered = true

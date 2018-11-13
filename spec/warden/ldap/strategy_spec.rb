@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
 RSpec.describe Warden::Ldap::Strategy do
-  before { Warden::Ldap.env = 'test' }
+  before do
+    Warden::Ldap.env = 'test'
+    Warden::Ldap.configure do |c|
+      c.config_file = File.join(__dir__, '../../fixtures/warden_ldap.yml')
+    end
+  end
 
   subject { described_class.new(@env) }
 
@@ -32,12 +37,9 @@ RSpec.describe Warden::Ldap::Strategy do
 
     it 'succeeds if the ldap connection succeeds' do
       allow(test_connection).to receive(:authenticate!).and_return(true)
-      allow(test_connection).to receive(:ldap_param_value).with('samAccountName')
-                                                          .and_return('samuel')
-      allow(test_connection).to receive(:ldap_param_value).with('cn')
-                                                          .and_return('Samuel')
-      allow(test_connection).to receive(:ldap_param_value).with('mail')
-                                                          .and_return('Samuel@swiftpenguin.com')
+
+      allow(test_connection).to receive(:ldap_param_value).with('userId').and_return('samuel')
+      allow(test_connection).to receive(:ldap_param_value).with('emailAddress').and_return('samuel@example.com')
 
       allow(Warden::Ldap::Connection).to receive(:new).and_return(test_connection)
       expect(subject).to receive(:success!)
