@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe Warden::Ldap::Strategy do
+  before(:each) { Warden::Ldap.env = 'test' } # TODO: Fix
+
   subject { described_class.new(@env) }
 
   describe '#valid?' do

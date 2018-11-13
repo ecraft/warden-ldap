@@ -1,9 +1,8 @@
 authorizations: &AUTHORIZATIONS
-  host: your.ldap.host.com
-  port: 389
+  url: ldap://your.ldap.host.com/ou=users,ou=accounts,dc=ds,dc=renewfund,dc=com
   attributes: [uid, cn, mail, samAccountName]
-  base: ou=users,ou=accounts,dc=ds,dc=renewfund,dc=com
-  generic_credentials: [admin, sekret]
+  username: admin
+  password: sekret
   # ssl: start_tls
 
 development: 

@@ -1,43 +1,42 @@
 # frozen_string_literal: true
 
 RSpec.describe Warden::Ldap::Configuration do
-  describe '#env' do
-    it 'returns Rails.env if defined' do
-      rails = double(env: :rails_environemnt)
-      stub_const('Rails', rails)
-      expect(described_class.new.env).to eq(:rails_environemnt)
-    end
-
-    it 'raises error if no environemnt defined' do
-      expect do
-        described_class.new.env
-      end.to raise_error Warden::Ldap::Configuration::Missing
-    end
+  it 'raises on missing file' do
+    expect do
+      Warden::Ldap::Configuration.new.load_configuration_file('', environment: 'test')
+    end.to raise_error(Warden::Ldap::Configuration::Missing)
   end
 
-  describe '#test_env?' do
-    subject { described_class.new }
-    it 'returns true if current env is one of test_environments' do
-      subject.test_environments = %w[siesta fiesta]
-      subject.env = 'siesta'
-      expect(subject.test_env?).to eq true
+  it 'raises on missing env' do
+    expect do
+      path = File.expand_path('../../fixtures/warden_ldap.yml', __dir__)
+
+      Warden::Ldap::Configuration.new.load_configuration_file(path, environment: 'missing')
+    end.to raise_error(Warden::Ldap::Configuration::Missing)
+  end
+
+  it 'parses YAML and returns content for current env' do
+    path = File.expand_path('../../fixtures/warden_ldap.yml', __dir__)
+    config = Warden::Ldap::Configuration.new
+    config.load_configuration_file(path, environment: 'test')
+
+    expect(config.attributes).to contain_exactly('uid', 'cn', 'mail', 'samAccountName')
+  end
+
+  context 'with WARDEN_LDAP_PASSWORD=abc' do
+    around do |example|
+      old_val = ENV['WARDEN_LDAP_PASSWORD']
+      ENV['WARDEN_LDAP_PASSWORD'] = 'abc'
+      example.run
+      ENV['WARDEN_LDAP_PASSWORD'] = old_val
     end
 
-    it 'returns false if current env is one of test_environments' do
-      subject.test_environments = %w[siesta fiesta]
-      subject.env = 'nada'
-      expect(subject.test_env?).to eq false
-    end
+    it 'parses YAML and ERB and returns content for current env' do
+      path = File.expand_path('../../fixtures/warden_ldap.yml.erb', __dir__)
+      config = Warden::Ldap::Configuration.new
+      config.load_configuration_file(path, environment: 'test')
 
-    it 'returns false if test_environemnts is empty' do
-      subject.test_environments = []
-      subject.env = 'fiesta'
-      expect(subject.test_env?).to eq false
-    end
-
-    it 'returns false if test_environemnts is undefined' do
-      subject.env = 'fiesta'
-      expect(subject.test_env?).to eq false
+      expect(config.password).to eq('abc')
     end
   end
 end

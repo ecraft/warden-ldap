@@ -23,19 +23,18 @@ module Warden
       # @option options [String] :password password to use for logging in
       # @option options [String] :encryption 'ssl' to use secure server
       def initialize(config, username: nil, password: nil, **options)
-        @config = config.config
+        @config = config
 
         @username = username
         @password = password
 
-        options[:encryption] = @config['ssl'].to_sym if @config['ssl']
+        options[:encryption] = @config.ssl
 
-        @host_pool = Warden::Ldap::HostPool.from_url(@config.fetch('url'), options: options)
+        @host_pool = Warden::Ldap::HostPool.from_url(@config.url, options: options)
 
         @ldap = @host_pool.connect
 
-        @generic_credentials = @config['generic_credentials']
-        @attribute = [@config['attributes']].flatten
+        @attribute = [@config.attributes].flatten
       end
 
       # Searches LDAP directory for the parameters value passed in, e.g., 'cn'.

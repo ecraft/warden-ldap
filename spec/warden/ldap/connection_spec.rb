@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
 RSpec.describe Warden::Ldap::Connection do
+  before(:each) { Warden::Ldap.env = 'test' } # TODO: Fix
+
   context 'with a fake config' do
     let(:config) do
       Warden::Ldap::Configuration.new do |cfg|
-        cfg.config = { 'url' => 'ldap://ldap.example.com' }
-      end.finalize!
+        cfg.attributes = []
+        cfg.url = 'ldap://ldap.example.com'
+      end
     end
 
     describe '#authenticate!' do
@@ -66,45 +69,6 @@ RSpec.describe Warden::Ldap::Connection do
           expect(subject.logger).to receive(:error).with('Requested ldap entry does not exist')
           expect(subject.ldap_param_value(:cn)).to be_nil
         end
-      end
-    end
-  end
-
-  context 'with no special config' do
-    describe '#config' do
-      it 'raises on missing file' do
-        config = Warden::Ldap::Configuration.new do |cfg|
-          cfg.config_file = ''
-        end
-
-        expect { config.finalize! }.to raise_error(Warden::Ldap::Configuration::Missing)
-      end
-    end
-
-    it 'parses YAML and returns content for current env' do
-      config = Warden::Ldap::Configuration.new do |cfg|
-        cfg.config_file = File.expand_path('../../fixtures/warden_ldap.yml', __dir__)
-        cfg.env = 'test'
-      end.finalize!
-
-      expect(config.config).to match(hash_including('attributes' => contain_exactly('uid', 'cn', 'mail', 'samAccountName')))
-    end
-
-    context 'with WARDEN_LDAP_PASSWORD=abc' do
-      around do |example|
-        old_val = ENV['WARDEN_LDAP_PASSWORD']
-        ENV['WARDEN_LDAP_PASSWORD'] = 'abc'
-        example.run
-        ENV['WARDEN_LDAP_PASSWORD'] = old_val
-      end
-
-      it 'parses YAML and ERB and returns content for current env' do
-        config = Warden::Ldap::Configuration.new do |cfg|
-          cfg.config_file = File.expand_path('../../fixtures/warden_ldap.yml.erb', __dir__)
-          cfg.env = 'test'
-        end.finalize!
-
-        expect(config.config).to match(hash_including('password' => 'abc'))
       end
     end
   end
