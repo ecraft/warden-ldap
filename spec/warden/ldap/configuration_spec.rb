@@ -22,6 +22,14 @@ RSpec.describe Warden::Ldap::Configuration do
 
     expect(config.attributes).to contain_exactly('uid', 'cn', 'mail', 'samAccountName')
   end
+  
+  it 'parses SSL settings' do
+    path = File.expand_path('../../fixtures/warden_ldap.yml', __dir__)
+    config = Warden::Ldap::Configuration.new
+    config.load_configuration_file(path, environment: 'test')
+
+    expect(config.ssl).to eq(:start_tls)
+  end
 
   context 'with WARDEN_LDAP_PASSWORD=abc' do
     around do |example|

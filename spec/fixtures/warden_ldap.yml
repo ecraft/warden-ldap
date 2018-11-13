@@ -3,7 +3,7 @@ authorizations: &AUTHORIZATIONS
   attributes: [uid, cn, mail, samAccountName]
   username: admin
   password: sekret
-  # ssl: start_tls
+  ssl: start_tls
 
 test: 
   <<: *AUTHORIZATIONS

@@ -20,11 +20,13 @@ module Warden
       Missing = Class.new(StandardError)
 
       class << self
-        def define_setting(name)
+        def define_setting(name, &block)
           defined_settings << name
 
           define_method(name) do
-            @configuration.fetch(name)
+            value = @configuration[name]
+            value = block.call(value) if block
+            value
           end
 
           define_method("#{name}=") do |value|
@@ -37,20 +39,16 @@ module Warden
         end
       end
 
-      define_setting :url
-      define_setting :attributes
-      define_setting :username
-      define_setting :password
-      define_setting :ssl
-
-      def ssl
-        @configuration[:ssl].to_sym if @configuration[:ssl]
-      end
+      define_setting(:url)
+      define_setting(:attributes)
+      define_setting(:username)
+      define_setting(:password)
+      define_setting(:ssl) { |ssl| ssl.to_sym if ssl }
 
       # Logger to use for outputting info and errors.
       #
       # Defaults to output to standard out and standard error.
-      define_setting :logger
+      define_setting(:logger)
 
       attr_reader :configuration
 
