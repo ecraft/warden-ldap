@@ -24,11 +24,11 @@ module Warden
           defined_settings << name
 
           define_method(name) do
-            @configuration.fetch(name.to_s)
+            @configuration.fetch(name)
           end
 
           define_method("#{name}=") do |value|
-            @configuration[name.to_s] = value
+            @configuration[name] = value
           end
         end
 
@@ -44,7 +44,7 @@ module Warden
       define_setting :ssl
 
       def ssl
-        @configuration['ssl'].to_sym if @configuration['ssl']
+        @configuration[:ssl].to_sym if @configuration[:ssl]
       end
 
       # Logger to use for outputting info and errors.
@@ -56,7 +56,7 @@ module Warden
 
       def initialize
         @configuration = {
-          'logger' => Logger.new($stderr)
+          logger: Logger.new($stderr)
         }
 
         yield self if block_given?
@@ -65,9 +65,9 @@ module Warden
       def load_configuration_file(path, environment:)
         raw = Pathname(path).read
         yml = ERB.new(raw).result
-        cfg = YAML.safe_load(yml, [], [], true)
+        cfg = YAML.safe_load(yml, [], [], true, symbolize_names: true)
 
-        @configuration.merge!(cfg.fetch(environment))
+        @configuration.merge!(cfg.fetch(environment.to_sym))
       rescue KeyError
         raise Missing, "Could not find environment #{environment} in file #{path.inspect}"
       rescue Errno::ENOENT
