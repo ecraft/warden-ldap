@@ -14,6 +14,7 @@ RSpec.describe Warden::Ldap do
       it 'raises error if no environment defined' do
         Warden::Ldap.env = nil
 
+        stub_const('ENV', {})
         expect { described_class.env }.to raise_error(Warden::Ldap::MissingEnvironment)
       end
     end
