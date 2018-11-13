@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Warden::Ldap::Connection do
-  before(:each) { Warden::Ldap.env = 'test' } # TODO: Fix
+  before { Warden::Ldap.env = 'test' }
 
   context 'with a fake config' do
     let(:config) do

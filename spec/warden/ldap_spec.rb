@@ -46,7 +46,7 @@ RSpec.describe Warden::Ldap do
   end
 
   context "integration" do
-    before :each do
+    before do
       Warden::Ldap.env = 'test'
 
       described_class.configure do |c|
