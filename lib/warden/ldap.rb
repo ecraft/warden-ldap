@@ -25,7 +25,7 @@ module Warden
       # Defaults to Rails.env if within Rails app and env is not set.
       def env
         @env ||= Rails.env if defined?(Rails)
-        @env ||= ENV["RACK_ENV"] if ENV["RACK_ENV"] && ENV["RACK_ENV"] != ""
+        @env ||= ENV['RACK_ENV'] if ENV['RACK_ENV'] && ENV['RACK_ENV'] != ''
 
         raise MissingEnvironment, 'Must define Warden::Ldap.env' unless @env
 
