@@ -67,7 +67,7 @@ module Warden
 
         @configuration.merge!(cfg.fetch(environment.to_sym))
       rescue KeyError
-        raise Missing, "Could not find environment #{environment} in file #{path.inspect}"
+        raise Missing, "Could not find environment #{environment.inspect} in file #{path.inspect}"
       rescue Errno::ENOENT
         raise Missing, "Could not find configuration file #{path.inspect}"
       end

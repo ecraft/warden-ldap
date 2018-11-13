@@ -22,4 +22,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake'
   spec.add_runtime_dependency 'net-ldap', '~> 0.3'
   spec.add_runtime_dependency 'warden', '~> 1.2.1'
+  spec.add_runtime_dependency 'psych', '>= 3.0.0'
 end
