@@ -48,6 +48,10 @@ authorizations: &AUTHORIZATIONS
   url: ldap://your.ldap.example.com/dc=ds,dc=renewfund,dc=com
   username: <%= ENV['LDAP_USERNAME'] %>
   password: <%= ENV['LDAP_PASSWORD'] %>
+  attributes:
+    username: "userId"
+    email: "emailAddress"
+  user_filter: "(&(objectClass=user)(emailAddress=$username))"
 
 test: 
   <<: *AUTHORIZATIONS
@@ -57,6 +61,30 @@ development:
 production: 
   <<: *AUTHORIZATIONS
 ```
+
+### `url`
+
+An `ldap://` URL to the LDAP server. Add any base (aka "treebase") as
+the path of this URL.
+
+### `username`
+
+The username of the account of the LDAP server which can search for users.
+
+### `password`
+
+The password of the account of the LDAP server which can search for users.
+
+### `attributes`
+
+A Hash where the keys are the User object properties and the
+values are attributes on the User's LDAP entry.
+
+### `user_filter`
+
+The "search for user" query is configured using the LDAP query format.
+The string `$username` is interpolated into the query as the username of
+the user you're trying to authenticate as.
 
 ## Testing
 
