@@ -37,7 +37,7 @@ module Warden
           @config.logger.debug(" - searching for user in base: #{base.inspect}")
           results = ldap.search(base: base, **options)
 
-          return results.first if results.count > 0
+          return results.first if results.count.positive?
         end
 
         nil
@@ -64,9 +64,7 @@ module Warden
           @config.logger.debug(" - searching for groups in base: #{base.inspect}")
           groups = ldap.search(base: base, **options)
 
-          if @config.groups.fetch(:nested, false)
-            groups += groups.flat_map { |g| raw_group_search(g.dn, ldap: ldap) }
-          end
+          groups += groups.flat_map { |g| raw_group_search(g.dn, ldap: ldap) } if @config.groups.fetch(:nested, false)
 
           groups
         end
@@ -86,11 +84,11 @@ module Warden
 
       def lookup_scope(scope)
         case scope
-        when "base", "base_object"
+        when 'base', 'base_object'
           Net::LDAP::SearchScope_BaseObject
-        when "level", "single_level"
+        when 'level', 'single_level'
           Net::LDAP::SearchScope_SingleLevel
-        when "subtree", "whole_subtree", nil
+        when 'subtree', 'whole_subtree', nil
           Net::LDAP::SearchScope_WholeSubtree
         else
           raise ArgumentError, "unknown scope type #{scope}"
