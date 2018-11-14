@@ -96,7 +96,13 @@ The LDAP treebase part of the query to find users.
 
 ### `users/scope`
 
-TODO
+LDAP search scope for the query to find users.
+
+| Configuration value | Scope used |
+| ---    | ---         |
+| `base` or `base_object` |  `Net::LDAP::SearchScope_BaseObject` |
+| `level` or `single_level` |  `Net::LDAP::SearchScope_SingleLevel` |
+| `subtree` or `whole_subtree` |  `Net::LDAP::SearchScope_WholeSubtree` (default) |
 
 ### `users/filter`
 
@@ -115,7 +121,8 @@ The LDAP treebase part of the query to find which groups a user belongs to.
 
 ### `groups/scope`
 
-TODO
+LDAP search scope for the query to find groups. See `users/scope` for
+possible configuration values.
 
 ### `groups/filter`
 
@@ -130,7 +137,9 @@ values are attributes on the Group's LDAP entry.
 
 ### `groups/nested`
 
-TODO - A Boolean which...
+Boolean. Default: `false`.
+
+If true, the search for groups will continue into each group.
 
 ## Testing
 
