@@ -64,12 +64,6 @@ module Warden
       def valid_login?
         !search_for_login.nil?
       end
-
-      private
-
-      def ldap_host
-        @ldap.host
-      end
     end
   end
 end
