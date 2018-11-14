@@ -60,7 +60,7 @@ module Warden
 
       # Searches LDAP directory for login name.
       #
-      # @@return [Boolean] true if found
+      # @return [Boolean] true if found
       def valid_login?
         !search_for_login.nil?
       end
