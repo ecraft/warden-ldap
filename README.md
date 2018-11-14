@@ -90,16 +90,47 @@ The username of the account of the LDAP server which can search for users.
 
 The password of the account of the LDAP server which can search for users.
 
-### `users/attributes`
+### `users/base`
 
-A Hash where the keys are the User object properties and the
-values are attributes on the User's LDAP entry.
+The LDAP treebase part of the query to find users.
+
+### `users/scope`
+
+TODO
 
 ### `users/filter`
 
 The "search for user" query is configured using the LDAP query format.
 The string `$username` is interpolated into the query as the username of
 the user you're trying to authenticate as.
+
+### `users/attributes`
+
+A Hash where the keys are the User object properties and the
+values are attributes on the User's LDAP entry.
+
+### `groups/base`
+
+The LDAP treebase part of the query to find which groups a user belongs to.
+
+### `groups/scope`
+
+TODO
+
+### `groups/filter`
+
+The "search for groups" query is configured using the LDAP query format.
+The string `$username` is interpolated into the query as the username of
+the user you're trying to find groups for.
+
+### `groups/attributes`
+
+A Hash where the keys are the Group object properties and the
+values are attributes on the Group's LDAP entry.
+
+### `groups/nested`
+
+TODO - A Boolean which...
 
 ## Testing
 
