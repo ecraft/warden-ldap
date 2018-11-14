@@ -8,6 +8,9 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
 require 'simplecov'
+SimpleCov.configure do
+  add_filter 'spec'
+end
 SimpleCov.start
 
 Dir[File.join(__dir__, 'helpers', '**/*.rb')].each do |f|
