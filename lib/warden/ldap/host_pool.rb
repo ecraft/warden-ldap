@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'uri'
-
 module Warden
   module Ldap
     # LDAP server host
@@ -20,7 +18,6 @@ module Warden
         Net::LDAP.new(@pool.options).tap do |connection|
           connection.host = @hostname
           connection.port = @port
-          connection.base = @pool.base
         end
       end
     end
@@ -39,8 +36,6 @@ module Warden
       end
 
       def self.from_url(url, options: {})
-        url = URI(url) if url.is_a? String
-
         new(base: url.dn, options: options).tap do |pool|
           pool.hosts << Host.new(pool: pool, hostname: url.host, port: url.port)
         end

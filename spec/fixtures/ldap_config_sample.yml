@@ -1,14 +1,32 @@
 authorizations: &AUTHORIZATIONS
-  url: ldap://your.ldap.host.com/ou=users,ou=accounts,dc=ds,dc=renewfund,dc=com
-  attributes: [uid, cn, mail, samAccountName]
+  url: ldap://example.com/dc=example,dc=com
   username: admin
   password: sekret
-  # ssl: start_tls
+  users:
+    base:
+      - ou=users
+    scope: subtree
+    filter: "(&(objectClass=user)(emailAddress=$username))"
+    attributes:
+      username: "userId"
+      email: "emailAddress"
+  groups:
+    base:
+      - ou=groups
+    scope: subtree
+    filter: "(&(objectClass=group)(member=$dn))"
+    nested: true
 
 development: 
   <<: *AUTHORIZATIONS
+
 alpha: 
   <<: *AUTHORIZATIONS
+
+staging:
+  <<: *AUTHORIZATIONS
+  ssl: start_tls
+
 production: 
   <<: *AUTHORIZATIONS
   ssl: start_tls

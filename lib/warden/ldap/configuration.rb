@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'logger'
+require 'uri'
 
 module Warden
   module Ldap
@@ -39,9 +40,9 @@ module Warden
         end
       end
 
-      define_setting(:url)
-      define_setting(:attributes)
-      define_setting(:user_filter)
+      define_setting(:url) { |url| URI(url) }
+      define_setting(:users)
+      define_setting(:groups)
       define_setting(:username)
       define_setting(:password)
       define_setting(:ssl) { |ssl| ssl&.to_sym }

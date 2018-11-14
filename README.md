@@ -48,18 +48,33 @@ authorizations: &AUTHORIZATIONS
   url: ldap://your.ldap.example.com/dc=ds,dc=renewfund,dc=com
   username: <%= ENV['LDAP_USERNAME'] %>
   password: <%= ENV['LDAP_PASSWORD'] %>
-  attributes:
-    username: "userId"
-    email: "emailAddress"
-  user_filter: "(&(objectClass=user)(emailAddress=$username))"
+  users:
+    base:
+      - ou=users
+    scope: subtree
+    filter: "(&(objectClass=user)(emailAddress=$username))"
+    attributes:
+      username: "userId"
+      email: "emailAddress"
+  groups:
+    base:
+      - ou=groups
+    scope: subtree
+    filter: "(&(objectClass=group)(member=$dn))"
+    attributes:
+      name: "cn"
+    nested: true
 
 test: 
   <<: *AUTHORIZATIONS
   url: ldap://localhost:1389/dc=example,dc=org
+
 development: 
   <<: *AUTHORIZATIONS
+
 production: 
   <<: *AUTHORIZATIONS
+  ssl: start_tls
 ```
 
 ### `url`
@@ -75,12 +90,12 @@ The username of the account of the LDAP server which can search for users.
 
 The password of the account of the LDAP server which can search for users.
 
-### `attributes`
+### `users/attributes`
 
 A Hash where the keys are the User object properties and the
 values are attributes on the User's LDAP entry.
 
-### `user_filter`
+### `users/filter`
 
 The "search for user" query is configured using the LDAP query format.
 The string `$username` is interpolated into the query as the username of

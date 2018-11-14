@@ -2,7 +2,7 @@
 
 RSpec.describe Warden::Ldap::HostPool do
   context 'without a SRV record' do
-    subject(:pool) { described_class.from_url('ldap://ldap.example.com/dc=com') }
+    subject(:pool) { described_class.from_url(URI('ldap://ldap.example.com/dc=com')) }
 
     describe '#initialize' do
       it 'fills in hostname' do

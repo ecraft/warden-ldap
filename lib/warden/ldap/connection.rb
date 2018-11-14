@@ -36,8 +36,6 @@ module Warden
         @host_pool = Warden::Ldap::HostPool.from_url(@config.url, options: options)
 
         @ldap = @host_pool.connect
-
-        @attribute = [@config.attributes].flatten
       end
 
       # Performs authentication with LDAP.
@@ -51,7 +49,7 @@ module Warden
 
         return unless user
 
-        @ldap.auth(user.dn, @password)
+        @ldap.auth(user.fetch(:dn), @password)
         user if @ldap.bind
       end
 

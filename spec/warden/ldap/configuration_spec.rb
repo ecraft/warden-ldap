@@ -20,7 +20,7 @@ RSpec.describe Warden::Ldap::Configuration do
     config = Warden::Ldap::Configuration.new
     config.load_configuration_file(path, environment: 'test')
 
-    expect(config.attributes).to eq(username: "userId", email: "emailAddress")
+    expect(config.users.fetch(:attributes)).to eq(username: "userId", email: "emailAddress")
   end
 
   it 'parses SSL settings' do

@@ -6,10 +6,12 @@ RSpec.describe Warden::Ldap::Connection do
   context 'with a fake config' do
     let(:config) do
       Warden::Ldap::Configuration.new do |cfg|
-        cfg.attributes = []
         cfg.url = 'ldap://ldap.example.com'
-        cfg.user_filter = "(&(objectClass=user)(emailAddress=$username))"
-        cfg.attributes = { username: "username" }
+        cfg.users = {
+          filter: "(&(objectClass=user)(emailAddress=$username))",
+          attributes: { username: "username" }
+        }
+        cfg.groups = {}
       end
     end
 
@@ -34,7 +36,7 @@ RSpec.describe Warden::Ldap::Connection do
 
         it 'authenticates and binds to ldap adapter' do
           ldap = double('Net::LDAP')
-          user = OpenStruct.new(dn: 'sammy', username: 'Sammy')
+          user = { dn: 'sammy', username: 'Sammy' }
 
           expect_any_instance_of(Warden::Ldap::HostPool).to receive(:connect).and_return(ldap)
           expect_any_instance_of(Warden::Ldap::UserFactory).to receive(:search).with('bob', ldap: ldap).and_return(user)
