@@ -127,8 +127,8 @@ possible configuration values.
 ### `groups/filter`
 
 The "search for groups" query is configured using the LDAP query format.
-The string `$username` is interpolated into the query as the username of
-the user you're trying to find groups for.
+The string `$dn` is interpolated into the query as the distinguished name of
+the group you're constraining the authentication to.
 
 ### `groups/attributes`
 
