@@ -49,5 +49,12 @@ RSpec.describe Warden::Ldap::Connection do
         end
       end
     end
+
+    describe '#logger' do
+      it 'comes with a default implementation' do
+        subject = described_class.new(config, username: 'bob', password: 'secret')
+        expect(subject.logger).to respond_to(:warn, :error, :info)
+      end
+    end
   end
 end
