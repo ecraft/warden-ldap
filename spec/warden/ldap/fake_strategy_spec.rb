@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Warden::Ldap::FakeStrategy do
+RSpec.describe Warden::Ldap::FakeStrategy, :with_rack do
   subject { described_class.new(@env) }
 
   describe '#valid?' do

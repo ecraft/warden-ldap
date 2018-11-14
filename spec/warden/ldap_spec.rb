@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Warden::Ldap do
+RSpec.describe Warden::Ldap, :with_rack do
   context 'environment' do
     describe '#env' do
       it 'returns Rails.env if defined' do

@@ -13,16 +13,16 @@ SimpleCov.configure do
 end
 SimpleCov.start
 
-Dir[File.join(__dir__, 'helpers', '**/*.rb')].each do |f|
-  require f
-end
-
 require File.join(__dir__, '../lib/warden/ldap')
 
 RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
-  config.include(Warden::Ldap::Helpers::RackHelpers)
+
+  config.when_first_matching_example_defined(:with_rack) do
+    require 'helpers/rack_helpers'
+    config.include(Warden::Ldap::Helpers::RackHelpers, with_rack: true)
+  end
 
   # Run specs in random order to surface order dependencies. If you find an
   # order dependency and want to debug it, you can fix the order by providing

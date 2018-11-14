@@ -18,5 +18,8 @@ RSpec.describe Warden::Ldap::UserFactory do
 
   describe '#search' do
     it 'returns nil if user not found'
+
+    context 'with a bad users/scope'
+    context 'with a bad groups/scope'
   end
 end

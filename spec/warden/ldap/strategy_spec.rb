@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Warden::Ldap::Strategy do
+RSpec.describe Warden::Ldap::Strategy, :with_rack do
   before do
     Warden::Ldap.env = 'test'
     Warden::Ldap.configure do |c|
