@@ -61,7 +61,7 @@ RSpec.describe Warden::Ldap::UserFactory do
     context 'with a bad users/scope' do
       it 'raises an ArgumentError' do
         c = Warden::Ldap::Configuration.new do |cfg|
-          cfg.logger = double.as_null_object
+          cfg.logger = Logger.new('/dev/null')
           cfg.url = 'ldap://ldap.example.com'
           cfg.users = {
               scope: 'trololol',
@@ -81,7 +81,7 @@ RSpec.describe Warden::Ldap::UserFactory do
     context 'with a bad groups/scope' do
       it 'raises an ArgumentError' do
         c = Warden::Ldap::Configuration.new do |cfg|
-          cfg.logger = double.as_null_object
+          cfg.logger = Logger.new('/dev/null')
           cfg.username = 'admin'
           cfg.password = 'sekret'
           cfg.url = 'ldap://ldap.example.com'
