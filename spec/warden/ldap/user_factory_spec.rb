@@ -89,56 +89,142 @@ RSpec.describe Warden::Ldap::UserFactory do
       end
     end
 
-    context 'with a bad users/scope' do
-      it 'raises an ArgumentError' do
-        c = Warden::Ldap::Configuration.new do |cfg|
-          cfg.logger = Logger.new('/dev/null')
-          cfg.url = 'ldap://ldap.example.com'
-          cfg.users = {
-            scope: 'trololol',
-            filter: '(&(objectClass=user)(emailAddress=$username))',
-            attributes: { username: 'username' }
-          }
-          cfg.groups = {}
-        end
-        user_factory = described_class.new(c)
-
-        expect do
-          user_factory.search('elmer', ldap: ldap)
-        end.to raise_error(ArgumentError, 'unknown scope type trololol')
+    context 'scopes' do
+      subject(:user_factory) do
+        described_class.new(configuration_block)
       end
-    end
 
-    context 'with a bad groups/scope' do
-      it 'raises an ArgumentError' do
-        c = Warden::Ldap::Configuration.new do |cfg|
-          cfg.logger = Logger.new('/dev/null')
-          cfg.username = 'admin'
-          cfg.password = 'sekret'
-          cfg.url = 'ldap://ldap.example.com'
-          cfg.users = {
-            filter: '(&(objectClass=user)(emailAddress=$username))',
-            attributes: { username: 'username' },
-            base: ['ou=users']
-          }
-          cfg.groups = {
-            filter: '(&(objectClass=group)(member=$dn))',
-            scope: 'trololol'
-          }
+      context 'configured wrong for users/scope' do
+        let(:configuration_block) do
+          Warden::Ldap::Configuration.new do |cfg|
+            cfg.logger = Logger.new('/dev/null')
+            cfg.url = 'ldap://ldap.example.com'
+            cfg.users = {
+                scope: 'trololol',
+                filter: '(&(objectClass=user)(emailAddress=$username))',
+                attributes: { username: 'username' }
+            }
+            cfg.groups = {}
+          end
         end
-        user_factory = described_class.new(c)
 
-        user = double('the-user', dn: 'the-dn',
-                                  username: 'elmer1',
-                                  emailAddress: 'elmer@example.com')
+        it 'raises an ArgumentError' do
+          expect do
+            user_factory.search('elmer', ldap: ldap)
+          end.to raise_error(ArgumentError, 'unknown scope type trololol')
+        end
+      end
 
-        # Ldap: find user, so that we can then try to find their Groups,
-        # and then fail on the unknown scope type.
-        expect(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
+      context 'configured wrong for groups/scope' do
+        let(:configuration_block) do
+          Warden::Ldap::Configuration.new do |cfg|
+            cfg.logger = Logger.new('/dev/null')
+            cfg.username = 'admin'
+            cfg.password = 'sekret'
+            cfg.url = 'ldap://ldap.example.com'
+            cfg.users = {
+                filter: '(&(objectClass=user)(emailAddress=$username))',
+                attributes: { username: 'username' },
+                base: ['ou=users']
+            }
+            cfg.groups = {
+                filter: '(&(objectClass=group)(member=$dn))',
+                scope: 'trololol'
+            }
+          end
+        end
 
-        expect do
-          user_factory.search('elmer', ldap: ldap)
-        end.to raise_error(ArgumentError, 'unknown scope type trololol')
+        it 'raises an ArgumentError' do
+          user = double('the-user', dn: 'the-dn',
+                        username: 'elmer1',
+                        emailAddress: 'elmer@example.com')
+
+          # Ldap: find user, so that we can then try to find their Groups,
+          # and then fail on the unknown scope type.
+          expect(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
+
+          expect do
+            user_factory.search('elmer', ldap: ldap)
+          end.to raise_error(ArgumentError, 'unknown scope type trololol')
+        end
+      end
+
+      context 'when configured with "base_object"' do
+        let(:configuration_block) do
+          Warden::Ldap::Configuration.new do |cfg|
+            cfg.logger = Logger.new('/dev/null')
+            cfg.username = 'admin'
+            cfg.password = 'sekret'
+            cfg.url = 'ldap://ldap.example.com'
+            cfg.users = {
+                filter: '(&(objectClass=user)(emailAddress=$username))',
+                attributes: { username: 'username' },
+                base: ['ou=users']
+            }
+            cfg.groups = {
+                filter: '(&(objectClass=group)(member=$dn))',
+                scope: 'base_object',
+                base: ['ou=users']
+            }
+          end
+        end
+
+        it 'raises nothing' do
+          user = double('the-user', dn: 'the-dn',
+                        username: 'elmer1',
+                        emailAddress: 'elmer@example.com')
+
+          # Ldap: find user, so that we can then try to find their Groups,
+          # and then fail on the unknown scope type.
+          allow(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
+          group = double('the-group', dn: 'the-group-dn',
+                         cn: 'the-cn')
+
+          expect(ldap).to receive(:search).with(a_hash_including(attributes: ['dn'], scope: Net::LDAP::SearchScope_BaseObject)).and_return([group])
+
+          expect do
+            user_factory.search('elmer', ldap: ldap)
+          end.not_to raise_error
+        end
+      end
+
+      context 'when configured with "single_level"' do
+        let(:configuration_block) do
+          Warden::Ldap::Configuration.new do |cfg|
+            cfg.logger = Logger.new('/dev/null')
+            cfg.username = 'admin'
+            cfg.password = 'sekret'
+            cfg.url = 'ldap://ldap.example.com'
+            cfg.users = {
+                filter: '(&(objectClass=user)(emailAddress=$username))',
+                attributes: { username: 'username' },
+                base: ['ou=users']
+            }
+            cfg.groups = {
+                filter: '(&(objectClass=group)(member=$dn))',
+                scope: 'single_level',
+                base: ['ou=users']
+            }
+          end
+        end
+
+        it 'raises nothing' do
+          user = double('the-user', dn: 'the-dn',
+                        username: 'elmer1',
+                        emailAddress: 'elmer@example.com')
+
+          # Ldap: find user, so that we can then try to find their Groups,
+          # and then fail on the unknown scope type.
+          allow(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
+          group = double('the-group', dn: 'the-group-dn',
+                         cn: 'the-cn')
+
+          expect(ldap).to receive(:search).with(a_hash_including(attributes: ['dn'], scope: Net::LDAP::SearchScope_SingleLevel)).and_return([group])
+
+          expect do
+            user_factory.search('elmer', ldap: ldap)
+          end.not_to raise_error
+        end
       end
     end
   end
