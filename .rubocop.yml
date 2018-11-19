@@ -12,6 +12,10 @@ Metrics/MethodLength:
 Metrics/AbcSize:
   Max: 22
 
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*.rb
+
 Naming/UncommunicativeMethodParamName:
   Exclude:
     - 'lib/warden/ldap/user_factory.rb'
