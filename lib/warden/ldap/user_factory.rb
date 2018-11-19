@@ -75,7 +75,7 @@ module Warden
         filter = filter.gsub('$dn', Net::LDAP::Filter.escape(dn))
 
         {
-          attributes: @user_attributes.values,
+          attributes: @group_attributes.values,
           filter: Net::LDAP::Filter::FilterParser.parse(filter),
           scope: lookup_scope(@config.groups[:scope]),
           return_result: true

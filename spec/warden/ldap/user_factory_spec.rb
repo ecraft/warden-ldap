@@ -21,18 +21,41 @@ RSpec.describe Warden::Ldap::UserFactory do
     let(:ldap) do
       double('the-ldap', auth: true)
     end
-    it 'returns nil if user not found' do
-      allow(ldap).to receive(:search).and_return([])
 
-      expect(subject.search('elmer', ldap: ldap)).to be_nil
+    context 'with no user found' do
+      it 'returns nil' do
+        allow(ldap).to receive(:search).and_return([])
+
+        expect(subject.search('elmer', ldap: ldap)).to be_nil
+      end
+
+      it 'always adds "dn" to the list of User Attributes' do
+        expect(ldap).to receive(:search).with(hash_including(
+                                                  attributes: %w[dn] + %w[userId emailAddress]
+                                              )).and_return([])
+
+        subject.search('elmer', ldap: ldap)
+      end
     end
 
-    it 'always adds "dn" to the list of User Attributes' do
-      expect(ldap).to receive(:search).with(hash_including(
-                                              attributes: %w[dn] + %w[userId emailAddress]
-                                            )).and_return([])
+    context 'with one user found' do
+      it 'returns a transformed User attributes hash' do
+        user = double('the-user', dn: 'the-dn',
+                                  userId: 'elmer1',
+                                  emailAddress: 'elmer@example.com')
+        # Ldap: find user
+        expect(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
+        # Ldap: find user's groups
+        expect(ldap).to receive(:search).with(a_hash_including(attributes: ['dn'],
+                                                               scope: Net::LDAP::SearchScope_WholeSubtree)).and_return([])
 
-      subject.search('elmer', ldap: ldap)
+        expect(subject.search('elmer', ldap: ldap)).to a_hash_including(
+                                                           dn: 'the-dn',
+                                                           username: 'elmer1',
+                                                           email: 'elmer@example.com',
+                                                           groups: anything,
+                                                       )
+      end
     end
 
     context 'with a bad users/scope'
