@@ -52,11 +52,6 @@ module Warden
         @ldap.auth(user.fetch(:dn), @password)
         user if @ldap.bind
       end
-
-      # @return [Boolean] true if user is authenticated
-      def authenticated?
-        !authenticate!.nil?
-      end
     end
   end
 end
