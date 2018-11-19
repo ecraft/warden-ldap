@@ -42,8 +42,8 @@ module Warden
       #
       # Timeouts after configured `timeout` (default: 5).
       #
-      # @return [Boolean, nil] true if authentication was successful,
-      #   false otherwise, or nil if password was not provided
+      # @return [Object, nil] User object if authentication was successful,
+      #   otherwise nil.
       def authenticate!
         user = @user_factory.search(@username, ldap: @ldap)
 
@@ -56,13 +56,6 @@ module Warden
       # @return [Boolean] true if user is authenticated
       def authenticated?
         !authenticate!.nil?
-      end
-
-      # Searches LDAP directory for login name.
-      #
-      # @return [Boolean] true if found
-      def valid_login?
-        !search_for_login.nil?
       end
     end
   end
