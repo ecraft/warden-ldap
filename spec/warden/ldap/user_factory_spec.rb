@@ -2,7 +2,7 @@
 
 RSpec.describe Warden::Ldap::UserFactory do
   before do
-    Warden::Ldap.logger = double.as_null_object
+    Warden::Ldap.logger = Logger.new('/dev/null')
     Warden::Ldap.env = 'test'
     Warden::Ldap.configure do |c|
       c.config_file = File.join(__dir__, '../../fixtures/warden_ldap.yml')
@@ -58,7 +58,57 @@ RSpec.describe Warden::Ldap::UserFactory do
       end
     end
 
-    context 'with a bad users/scope'
-    context 'with a bad groups/scope'
+    context 'with a bad users/scope' do
+      it 'raises an ArgumentError' do
+        c = Warden::Ldap::Configuration.new do |cfg|
+          cfg.logger = double.as_null_object
+          cfg.url = 'ldap://ldap.example.com'
+          cfg.users = {
+              scope: 'trololol',
+              filter: "(&(objectClass=user)(emailAddress=$username))",
+              attributes: { username: "username" }
+          }
+          cfg.groups = {}
+        end
+        user_factory = described_class.new(c)
+
+        expect {
+          user_factory.search('elmer', ldap: ldap)
+        }.to raise_error(ArgumentError, 'unknown scope type trololol')
+      end
+    end
+
+    context 'with a bad groups/scope' do
+      it 'raises an ArgumentError' do
+        c = Warden::Ldap::Configuration.new do |cfg|
+          cfg.logger = double.as_null_object
+          cfg.username = 'admin'
+          cfg.password = 'sekret'
+          cfg.url = 'ldap://ldap.example.com'
+          cfg.users = {
+            filter: "(&(objectClass=user)(emailAddress=$username))",
+            attributes: { username: "username" },
+            base: ['ou=users']
+          }
+          cfg.groups = {
+            filter: "(&(objectClass=group)(member=$dn))",
+            scope: 'trololol'
+          }
+        end
+        user_factory = described_class.new(c)
+
+        user = double('the-user', dn: 'the-dn',
+                      username: 'elmer1',
+                      emailAddress: 'elmer@example.com')
+
+        # Ldap: find user, so that we can then try to find their Groups,
+        # and then fail on the unknown scope type.
+        expect(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
+
+        expect {
+          user_factory.search('elmer', ldap: ldap)
+        }.to raise_error(ArgumentError, 'unknown scope type trololol')
+      end
+    end
   end
 end
