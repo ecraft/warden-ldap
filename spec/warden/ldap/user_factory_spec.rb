@@ -46,20 +46,19 @@ RSpec.describe Warden::Ldap::UserFactory do
         # Ldap: find user
         expect(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
         # Ldap: find user's groups
-        expect(ldap).to receive(:search).with(a_hash_including(attributes: ['dn'],
+        expect(ldap).to receive(:search).with(a_hash_including(attributes: %w(dn cn),
                                                                scope: Net::LDAP::SearchScope_WholeSubtree)).and_return([])
 
         expect(subject.search('elmer', ldap: ldap)).to a_hash_including(
           dn: 'the-dn',
           username: 'elmer1',
-          email: 'elmer@example.com',
-          groups: []
+          email: 'elmer@example.com'
         )
       end
     end
 
     context 'with one user found with a Group' do
-      it 'returns a transformed User attributes hash with Groups' do
+      it 'returns a transformed User attributes hash with transformed Groups' do
         #
         # Ldap: find user
         #
@@ -75,7 +74,7 @@ RSpec.describe Warden::Ldap::UserFactory do
                                     cn: 'the-cn')
         # The Group lookup is nested, so we only offer 2 return values,
         # first `[group]` then `[]`.
-        expect(ldap).to receive(:search).with(a_hash_including(attributes: ['dn'],
+        expect(ldap).to receive(:search).with(a_hash_including(attributes: %w(dn cn),
                                                                scope: Net::LDAP::SearchScope_WholeSubtree)).and_return([group], [])
 
         expect(subject.search('elmer', ldap: ldap)).to a_hash_including(
@@ -83,7 +82,8 @@ RSpec.describe Warden::Ldap::UserFactory do
           username: 'elmer1',
           email: 'elmer@example.com',
           groups: contain_exactly(
-            dn: 'the-group-dn'
+            dn: 'the-group-dn',
+            name: 'the-cn'
           )
         )
       end

@@ -17,6 +17,8 @@ authorizations: &AUTHORIZATIONS
     scope: subtree
     filter: "(&(objectClass=group)(member=$dn))"
     nested: true
+    attributes:
+      name: cn
     
 
 test: 
