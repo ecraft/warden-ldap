@@ -23,20 +23,30 @@ RSpec.describe Warden::Ldap::Configuration do
     expect(config.users.fetch(:attributes)).to eq(username: "userId", email: "emailAddress")
   end
 
-  it 'parses SSL settings' do
-    path = File.expand_path('../../fixtures/warden_ldap.yml', __dir__)
-    config = Warden::Ldap::Configuration.new
-    config.load_configuration_file(path, environment: 'test')
+  context "SSL settings" do
+    it 'parses SSL settings' do
+      path = File.expand_path('../../fixtures/warden_ldap.yml', __dir__)
+      config = Warden::Ldap::Configuration.new
+      config.load_configuration_file(path, environment: 'production')
 
-    expect(config.ssl).to eq(:start_tls)
+      expect(config.ssl).to eq(:start_tls)
+    end
+
+    it 'SSL is disabled by default' do
+      path = File.expand_path('../../fixtures/warden_ldap.yml', __dir__)
+      config = Warden::Ldap::Configuration.new
+      config.load_configuration_file(path, environment: 'test')
+
+      expect(config.ssl).to be_nil
+    end
   end
 
   context 'with WARDEN_LDAP_PASSWORD=abc' do
     around do |example|
-      old_val = ENV['WARDEN_LDAP_PASSWORD']
-      ENV['WARDEN_LDAP_PASSWORD'] = 'abc'
+      old_val = ENV['LDAP_PASSWORD']
+      ENV['LDAP_PASSWORD'] = 'abc'
       example.run
-      ENV['WARDEN_LDAP_PASSWORD'] = old_val
+      ENV['LDAP_PASSWORD'] = old_val
     end
 
     it 'parses YAML and ERB and returns content for current env' do

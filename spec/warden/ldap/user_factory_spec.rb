@@ -32,7 +32,7 @@ RSpec.describe Warden::Ldap::UserFactory do
       it 'always adds "dn" to the list of User Attributes' do
         expect(ldap).to receive(:search).with(hash_including(
                                                 attributes: %w[dn] + %w[userId emailAddress]
-                                              )).and_return([])
+                                              )).and_return([], [])
 
         subject.search('elmer', ldap: ldap)
       end
@@ -46,7 +46,7 @@ RSpec.describe Warden::Ldap::UserFactory do
         # Ldap: find user
         expect(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
         # Ldap: find user's groups
-        expect(ldap).to receive(:search).with(a_hash_including(attributes: %w(dn cn),
+        expect(ldap).to receive(:search).with(a_hash_including(attributes: %w(dn cn country ou),
                                                                scope: Net::LDAP::SearchScope_WholeSubtree)).and_return([])
 
         expect(subject.search('elmer', ldap: ldap)).to a_hash_including(
@@ -71,8 +71,10 @@ RSpec.describe Warden::Ldap::UserFactory do
         # Ldap: find user's groups
         #
         group = double('the-group', dn: 'the-group-dn',
-                                    cn: 'the-cn')
-        group_search_args = a_hash_including(attributes: %w(dn cn),
+                                    cn: 'the-cn',
+                                    ou: 'Numerique et Informatique',
+                                    country: 'France')
+        group_search_args = a_hash_including(attributes: %w(dn cn country ou),
                                              scope: Net::LDAP::SearchScope_WholeSubtree)
         # RSpec detail: The Group lookup is nested, so we only offer 2 return
         # values, first `[group]` then `[]`.
@@ -84,7 +86,9 @@ RSpec.describe Warden::Ldap::UserFactory do
           email: 'elmer@example.com',
           groups: contain_exactly(
             dn: 'the-group-dn',
-            name: 'the-cn'
+            name: 'the-cn',
+            organization: 'Numerique et Informatique',
+            country: 'France'
           )
         )
       end

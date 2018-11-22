@@ -24,13 +24,14 @@ And then execute:
 2. Initialize the `Warden::Ldap` adapter:
 
 ```ruby
+Warden::Ldap.env = 'development' # Defaults to RACK_ENV / Rails.env
 Warden::Ldap.configure do |c|
-  c.config_file = '/absolute/path/to/config/ldap_config.yml'
-  c.env = 'test'
+  c.config_file = 'path/to/config/ldap_config.yml'
 end
 ```
 
-3. Add the `ldap_config.yml` to configure connection to ldap server. See `spec/fixtures/ldap_config_sample.yml`.
+3. Add the YAML file to configure connection to LDAP server. See below for
+   details and example content.
 
 ## Configuration
 
