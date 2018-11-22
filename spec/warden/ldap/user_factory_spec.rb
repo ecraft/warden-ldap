@@ -29,7 +29,7 @@ RSpec.describe Warden::Ldap::UserFactory do
         expect(subject.search('elmer', ldap: ldap)).to be_nil
       end
 
-      it 'always adds "dn" to the list of User Attributes' do
+      it 'always adds "dn" to User Attributes' do
         expect(ldap).to receive(:search).with(hash_including(
                                                 attributes: %w[dn] + %w[userId emailAddress]
                                               )).and_return([], [])
@@ -39,13 +39,15 @@ RSpec.describe Warden::Ldap::UserFactory do
     end
 
     context 'with one user found' do
-      it 'returns a transformed User attributes hash' do
-        user = double('the-user', dn: 'the-dn',
-                                  userId: 'elmer1',
-                                  emailAddress: 'elmer@example.com')
-        # Ldap: find user
+      let(:user) do
+        double('the-user', dn: 'the-dn',
+               userId: 'elmer1',
+               emailAddress: 'elmer@example.com')
+      end
+
+      it 'returns a User hash with transformed attributes' do
         expect(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
-        # Ldap: find user's groups
+        # Ldap: find user's groups (zero groups)
         expect(ldap).to receive(:search).with(a_hash_including(attributes: %w(dn cn country ou),
                                                                scope: Net::LDAP::SearchScope_WholeSubtree)).and_return([])
 
@@ -58,38 +60,58 @@ RSpec.describe Warden::Ldap::UserFactory do
     end
 
     context 'with one user found with a Group' do
-      it 'returns a transformed User attributes hash with transformed Groups' do
-        #
-        # Ldap: find user
-        #
+      before do
         user = double('the-user', dn: 'the-dn',
-                                  userId: 'elmer1',
-                                  emailAddress: 'elmer@example.com')
-        expect(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
+                              userId: 'elmer1',
+                              emailAddress: 'elmer@example.com')
 
-        #
-        # Ldap: find user's groups
-        #
         group = double('the-group', dn: 'the-group-dn',
-                                    cn: 'the-cn',
-                                    ou: 'Numerique et Informatique',
-                                    country: 'France')
+                       cn: 'the-cn',
+                       ou: 'Numerique et Informatique',
+                       country: 'France')
+
+        allow(ldap).to receive(:search).with(a_hash_including(size: 1)).and_return([user])
+
         group_search_args = a_hash_including(attributes: %w(dn cn country ou),
                                              scope: Net::LDAP::SearchScope_WholeSubtree)
-        # RSpec detail: The Group lookup is nested, so we only offer 2 return
-        # values, first `[group]` then `[]`.
-        expect(ldap).to receive(:search).with(group_search_args).and_return([group], [])
 
-        expect(subject.search('elmer', ldap: ldap)).to a_hash_including(
+        # RSpec detail: The Group lookup is nested, so we offer 2 return
+        # values, first `[group]` then `[]`.
+        allow(ldap).to receive(:search).with(group_search_args).and_return([group], [])
+      end
+
+      let(:user) do
+        subject.search('elmer', ldap: ldap)
+      end
+
+      it 'returns a User hash with transformed attributes' do
+        expect(user).to a_hash_including(
           dn: 'the-dn',
           username: 'elmer1',
-          email: 'elmer@example.com',
-          groups: contain_exactly(
+          email: 'elmer@example.com'
+        )
+      end
+
+      it 'returns a User hash with group attributes' do
+        expect(user).to a_hash_including(
+          groups: contain_exactly(hash_including(
             dn: 'the-group-dn',
             name: 'the-cn',
             organization: 'Numerique et Informatique',
             country: 'France'
-          )
+          ))
+        )
+      end
+
+      it 'returns a User hash with group matches' do
+        expect(user).to a_hash_including(
+          groups: contain_exactly(hash_including(france: true))
+        )
+      end
+
+      it 'returns a User hash without group matches that do not match' do
+        expect(user).to a_hash_including(
+          groups: contain_exactly(hash_excluding(:user, :admin, :beta))
         )
       end
     end

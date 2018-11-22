@@ -9,6 +9,7 @@ module Warden
 
         @user_attributes = { dn: 'dn' }.merge(@config.users.fetch(:attributes, {}))
         @group_attributes = { dn: 'dn' }.merge(@config.groups.fetch(:attributes, {}))
+        @group_matches = @config.groups.fetch(:matches, [])
       end
 
       def search(username, ldap:)
@@ -22,7 +23,19 @@ module Warden
 
         result = @user_attributes.map { |k, v| [k, user.send(v.to_sym)] }.to_h
         result[:groups] = raw_group_search(result.fetch(:dn), ldap: ldap).map do |group|
-          @group_attributes.map { |k, v| [k, group.send(v.to_sym)] }.to_h
+          group_attributes = @group_attributes.map { |k, v| [k, group.send(v.to_sym)] }.to_h
+
+          @group_matches.each do |matcher|
+            values = matcher.fetch(:values)
+
+            if group_attributes.values_at(*values.keys) == values.values
+              # Note: We have to symbolize the key, even though we pass that as
+              #       an option to YAML.safe_load for reasons.
+              group_attributes[matcher.fetch(:key).to_sym] = true
+            end
+          end
+
+          group_attributes
         end
         result
       end
