@@ -23,19 +23,7 @@ module Warden
 
         result = @user_attributes.map { |k, v| [k, user.send(v.to_sym)] }.to_h
         result[:groups] = raw_group_search(result.fetch(:dn), ldap: ldap).map do |group|
-          group_attributes = @group_attributes.map { |k, v| [k, group.send(v.to_sym)] }.to_h
-
-          @group_matches.each do |matcher|
-            values = matcher.fetch(:values)
-
-            if group_attributes.values_at(*values.keys) == values.values
-              # Note: We have to symbolize the key, even though we pass that as
-              #       an option to YAML.safe_load for reasons.
-              group_attributes[matcher.fetch(:key).to_sym] = true
-            end
-          end
-
-          group_attributes
+          process_raw_group(group)
         end
         result
       end
@@ -93,6 +81,22 @@ module Warden
           scope: lookup_scope(@config.groups[:scope]),
           return_result: true
         }
+      end
+
+      def process_raw_group(group)
+        group_attributes = @group_attributes.map { |k, v| [k, group.send(v.to_sym)] }.to_h
+
+        @group_matches.each do |matcher|
+          values = matcher.fetch(:values)
+
+          next unless group_attributes.values_at(*values.keys) == values.values
+
+          # Note: We have to symbolize the key, even though we pass that as
+          #       an option to YAML.safe_load for reasons.
+          group_attributes[matcher.fetch(:key).to_sym] = true
+        end
+
+        group_attributes
       end
 
       def lookup_scope(scope)
