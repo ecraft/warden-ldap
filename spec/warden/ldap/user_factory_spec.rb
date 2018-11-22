@@ -72,10 +72,11 @@ RSpec.describe Warden::Ldap::UserFactory do
         #
         group = double('the-group', dn: 'the-group-dn',
                                     cn: 'the-cn')
-        # The Group lookup is nested, so we only offer 2 return values,
-        # first `[group]` then `[]`.
-        expect(ldap).to receive(:search).with(a_hash_including(attributes: %w(dn cn),
-                                                               scope: Net::LDAP::SearchScope_WholeSubtree)).and_return([group], [])
+        group_search_args = a_hash_including(attributes: %w(dn cn),
+                                             scope: Net::LDAP::SearchScope_WholeSubtree)
+        # RSpec detail: The Group lookup is nested, so we only offer 2 return
+        # values, first `[group]` then `[]`.
+        expect(ldap).to receive(:search).with(group_search_args).and_return([group], [])
 
         expect(subject.search('elmer', ldap: ldap)).to a_hash_including(
           dn: 'the-dn',
