@@ -8,56 +8,61 @@ RSpec.describe Warden::Ldap::Strategy, :with_rack do
     end
   end
 
-  subject { described_class.new(@env) }
-
   describe '#valid?' do
     it 'returns true if both username and password are passed in' do
       @env = env_with_params('/', 'username' => 'test', 'password' => 'secret')
+      subject = described_class.new(@env)
       expect(subject).to be_valid
     end
 
     it 'returns false if password is missing' do
       @env = env_with_params('/', 'username' => 'test')
+      subject = described_class.new(@env)
       expect(subject).to_not be_valid
     end
 
     it 'returns false if password is blank' do
       @env = env_with_params('/', 'username' => 'test', 'password' => '')
+      subject = described_class.new(@env)
       expect(subject).to_not be_valid
     end
   end
 
-  describe '#authenticte!' do
+  describe '#authenticate!' do
     before do
-      @env = env_with_params('/', 'username' => 'test', 'password' => 'secret')
-      allow(subject).to receive_messages(valid?: true)
+      env = env_with_params('/', 'username' => 'test', 'password' => 'secret')
+
+      @strategy = described_class.new(env)
+      allow(@strategy).to receive_messages(valid?: true)
+      allow(@strategy).to receive(:connection).and_return(test_connection)
     end
 
     let(:test_connection) { double(Warden::Ldap::Connection) }
 
     it 'succeeds if the ldap connection succeeds' do
-      allow(test_connection).to receive(:authenticate!).and_return(true)
+      allow(test_connection).to receive(:authenticate!)
+                                  .with(username: 'test', password: 'secret')
+                                  .and_return(true)
 
-      allow(test_connection).to receive(:ldap_param_value).with('userId').and_return('samuel')
-      allow(test_connection).to receive(:ldap_param_value).with('emailAddress').and_return('samuel@example.com')
+      expect(@strategy).to receive(:success!)
 
-      allow(Warden::Ldap::Connection).to receive(:new).and_return(test_connection)
-      expect(subject).to receive(:success!)
-      subject.authenticate!
+      @strategy.authenticate!
     end
 
     it 'fails if ldap connection fails' do
       allow(test_connection).to receive(:authenticate!).and_return(false)
-      allow(Warden::Ldap::Connection).to receive(:new).and_return(test_connection)
-      expect(subject).to receive(:fail!)
-      subject.authenticate!
+
+      expect(@strategy).to receive(:fail!)
+
+      @strategy.authenticate!
     end
 
     it 'fails if Net::LDAP::LdapError was raised' do
       allow(test_connection).to receive(:authenticate!).and_raise(Net::LDAP::LdapError)
-      allow(Warden::Ldap::Connection).to receive(:new).and_return(test_connection)
-      expect(subject).to receive(:fail!)
-      subject.authenticate!
+
+      expect(@strategy).to receive(:fail!)
+
+      @strategy.authenticate!
     end
   end
 end

@@ -8,13 +8,16 @@ module Warden
   module Ldap
     # Warden Strategy for LDAP
     class Strategy < Warden::Strategies::Base
+      attr_reader :connection
+
       def initialize(*args)
-        super
+        super(*args)
 
         @config = Warden::Ldap.configuration
+        @connection = Warden::Ldap::Connection.new(@config)
       end
 
-      # @return [Boolean ] true if all credentials have been provided.
+      # @return [Boolean] true if all credentials have been provided.
       def valid?
         credentials.all? { |c| c.to_s !~ /^\s*$/ }
       end
@@ -25,8 +28,7 @@ module Warden
       #
       # @return [Object, nil] user object
       def authenticate!
-        connection = Warden::Ldap::Connection.new(@config, credentials_hash)
-        user = connection.authenticate!
+        user = connection.authenticate!(credentials_hash)
 
         if user
           success!(user)

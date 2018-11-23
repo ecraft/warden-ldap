@@ -18,22 +18,17 @@ RSpec.describe Warden::Ldap::Connection do
     describe '#authenticate!' do
       describe '#initialize' do
         it 'sets up hosts for regular url' do
-          subject = described_class.new(config, username: 'bob', password: 'secret')
+          subject = described_class.new(config)
           expect(subject.host_pool.hosts.map(&:hostname)).to match_array %w[ldap.example.com]
         end
 
         it 'sets up default port for regular url' do
-          subject = described_class.new(config, username: 'bob', password: 'secret')
+          subject = described_class.new(config)
           expect(subject.host_pool.hosts.map(&:port)).to match_array [389]
         end
       end
 
       describe '#authenticate!' do
-        xit 'does nothing if no password present' do
-          subject = described_class.new('username' => 'bob')
-          expect(subject.authenticate!).to be_nil
-        end
-
         it 'authenticates and binds to ldap adapter' do
           ldap = double('Net::LDAP')
           user = { dn: 'sammy', username: 'Sammy' }
@@ -43,16 +38,16 @@ RSpec.describe Warden::Ldap::Connection do
           expect(ldap).to receive(:auth).with('sammy', 'secret')
           expect(ldap).to receive(:bind).and_return(true)
 
-          subject = described_class.new(config, username: 'bob', password: 'secret')
+          subject = described_class.new(config)
 
-          expect(subject.authenticate!).to eq(user)
+          expect(subject.authenticate!(username: 'bob', password: 'secret')).to eq(user)
         end
       end
     end
 
     describe '#logger' do
       it 'comes with a default implementation' do
-        subject = described_class.new(config, username: 'bob', password: 'secret')
+        subject = described_class.new(config)
         expect(subject.logger).to respond_to(:warn, :error, :info)
       end
     end

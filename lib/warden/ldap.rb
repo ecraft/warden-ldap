@@ -4,7 +4,6 @@ require 'warden/ldap/version'
 require 'warden/ldap/configuration'
 require 'warden/ldap/connection'
 require 'warden/ldap/strategy'
-require 'warden/ldap/fake_strategy'
 
 module Warden
   # Warden LDAP strategy
@@ -58,9 +57,7 @@ module Warden
       end
 
       def register
-        strategy = test_env? ? FakeStrategy : Strategy
-
-        Warden::Strategies.add(:ldap, strategy)
+        Warden::Strategies.add(:ldap, Strategy)
       end
     end
   end

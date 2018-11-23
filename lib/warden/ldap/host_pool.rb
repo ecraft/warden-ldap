@@ -35,7 +35,10 @@ module Warden
         @hosts = []
       end
 
-      def self.from_url(url, options: {})
+      def self.from_config(config)
+        url = config.url
+        options = { encryption: config.ssl }
+
         new(base: url.dn, options: options).tap do |pool|
           pool.hosts << Host.new(pool: pool, hostname: url.host, port: url.port)
         end

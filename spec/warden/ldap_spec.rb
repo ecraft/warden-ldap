@@ -89,7 +89,9 @@ RSpec.describe Warden::Ldap, :with_rack do
         success_app.call(env)
       end
 
-      allow_any_instance_of(Warden::Ldap::Connection).to receive_messages(authenticate!: OpenStruct.new(username: 'bobby'))
+      allow_any_instance_of(Warden::Ldap::Connection).to receive(:authenticate!)
+                                                           .with(username: 'bobby', password: 'joel')
+                                                           .and_return(OpenStruct.new(username: 'bobby'))
 
       result = setup_rack(app).call(env)
       expect(env['warden'].user.username).to eq 'bobby'
