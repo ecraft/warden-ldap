@@ -18,32 +18,6 @@ RSpec.describe Warden::Ldap, :with_rack do
         expect { described_class.env }.to raise_error(Warden::Ldap::MissingEnvironment)
       end
     end
-
-    describe '#test_env?' do
-      it 'returns true if current env is one of test_envs' do
-        subject.test_envs = %w[siesta fiesta]
-        subject.env = 'siesta'
-        expect(subject.test_env?).to eq true
-      end
-
-      it 'returns false if current env is one of test_envs' do
-        subject.test_envs = %w[siesta fiesta]
-        subject.env = 'nada'
-        expect(subject.test_env?).to eq false
-      end
-
-      it 'returns false if test_envs is empty' do
-        subject.test_envs = []
-        subject.env = 'fiesta'
-        expect(subject.test_env?).to eq false
-      end
-
-      it 'returns false if test_envs is undefined' do
-        subject.test_envs = nil
-        subject.env = 'fiesta'
-        expect(subject.test_env?).to eq false
-      end
-    end
   end
 
   context "integration" do

@@ -31,17 +31,6 @@ module Warden
         @env
       end
 
-      attr_writer :test_envs
-
-      def test_envs
-        @test_envs || []
-      end
-
-      # @return [Boolean] is current environment is listed in test_envs?
-      def test_env?
-        test_envs.include?(env)
-      end
-
       def configure
         yield self if block_given?
 
