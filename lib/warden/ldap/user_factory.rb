@@ -56,21 +56,21 @@ module Warden
         results = ldap.search(**options) || []
 
         if results.count.positive?
-          @config.logger.debug(" - user found")
+          @config.logger.debug(' - user found')
           return results.first
         end
 
-        @config.logger.debug(" - user not found")
+        @config.logger.debug(' - user not found')
         nil
       end
 
       def options_for_user_find(dn)
         {
-            attributes: @user_attributes.values,
-            base: dn,
-            scope: lookup_scope('base'),
-            size: 1,
-            return_result: true
+          attributes: @user_attributes.values,
+          base: dn,
+          scope: lookup_scope('base'),
+          size: 1,
+          return_result: true
         }
       end
 
@@ -94,12 +94,12 @@ module Warden
           results = ldap.search(base: base, **options) || []
 
           if results.count.positive?
-            @config.logger.debug(" - user found")
+            @config.logger.debug(' - user found')
             return results.first
           end
         end
 
-        @config.logger.debug(" - user not found")
+        @config.logger.debug(' - user not found')
         nil
       end
 
