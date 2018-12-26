@@ -10,6 +10,6 @@ gem 'rack'
 group :development, :test do
   gem 'pry'
   gem 'rspec'
-  gem 'rubocop', '~> 0.60.0'
+  gem 'rubocop', '~> 0.61.1'
   gem 'simplecov'
 end
